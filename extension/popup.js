@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const res = await fetch(`${apiUrl}/api/content`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ title, type, url, description }),
         });
         const data = await res.json();
