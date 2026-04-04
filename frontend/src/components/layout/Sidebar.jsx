@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { gsap } from "gsap";
 import {
   Brain, LayoutDashboard, Library, Search, FolderOpen,
-  BarChart2, Plus, LogOut, User, ChevronRight, Sparkles,
+  BarChart2, Plus, LogOut, User, ChevronRight, Sparkles, Network,
 } from "lucide-react";
 import SaveModal from "../content/SaveModal.jsx";
 import { authAPI } from "../../services/api.service.js";
@@ -15,7 +15,8 @@ const navItems = [
   { to: "/library",     icon: Library,         label: "Library",         color: "#06d6a0" },
   { to: "/search",      icon: Search,          label: "Semantic Search", color: "#38bdf8" },
   { to: "/collections", icon: FolderOpen,      label: "Collections",     color: "#fb923c" },
-  { to: "/graph",       icon: BarChart2,       label: "Insights",        color: "#a78bfa" },
+  { to: "/graph",       icon: Network,         label: "Knowledge Graph", color: "#a78bfa" },
+  { to: "/insights",    icon: BarChart2,       label: "Insights",        color: "#f43f5e" },
 ];
 
 export default function Sidebar() {

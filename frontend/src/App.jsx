@@ -7,6 +7,7 @@ import LibraryPage from "./pages/LibraryPage.jsx";
 import SearchPage from "./pages/SearchPage.jsx";
 import CollectionsPage from "./pages/CollectionsPage.jsx";
 import GraphPage from "./pages/GraphPage.jsx";
+import InsightsPage from "./pages/InsightsPage.jsx";
 import ContentDetailPage from "./pages/ContentDetailPage.jsx";
 import AuthPage from "./pages/AuthPage.jsx";
 import useStore from "./store/useStore.js";
@@ -81,6 +82,7 @@ export default function App() {
             <Route path="/search"     element={<SearchPage />} />
             <Route path="/collections" element={<CollectionsPage />} />
             <Route path="/graph"      element={<GraphPage />} />
+            <Route path="/insights"   element={<InsightsPage />} />
             <Route path="/content/:id" element={<ContentDetailPage />} />
             <Route path="*"           element={<Navigate to="/" />} />
           </Routes>

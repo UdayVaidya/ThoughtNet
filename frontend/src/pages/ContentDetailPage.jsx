@@ -51,7 +51,16 @@ export default function ContentDetailPage() {
       </button>
 
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        {item.type === 'youtube' && getYoutubeVideoId(item.url) ? (
+        {item.type === 'pdf' ? (
+          <div className="rounded-2xl overflow-hidden mb-6 h-64 lg:h-[600px] relative glass border border-white/10">
+            <iframe 
+              src={`https://docs.google.com/viewer?url=${encodeURIComponent(item.url)}&embedded=true`} 
+              className="w-full h-full" 
+              title={item.title}
+              frameBorder="0"
+            />
+          </div>
+        ) : item.type === 'youtube' && getYoutubeVideoId(item.url) ? (
           <div className="rounded-2xl overflow-hidden mb-6 h-64 lg:h-[400px] relative glass">
             <iframe
               className="absolute inset-0 w-full h-full"
@@ -71,8 +80,8 @@ export default function ContentDetailPage() {
         <div className="glass-mid rounded-2xl p-8 mb-6"
           style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex items-start justify-between gap-4 mb-4">
-            <h1 className="font-black text-2xl text-white leading-tight"
-              style={{ fontFamily: 'Syne, sans-serif' }}>
+            <h1 className="font-black text-2xl text-white leading-tight break-all"
+              style={{ fontFamily: 'Syne, sans-serif', overflowWrap: 'anywhere', wordBreak: 'break-all' }}>
               {item.title}
             </h1>
             <div className="flex items-center gap-2 shrink-0">

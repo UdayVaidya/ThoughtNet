@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Link, FileText, Youtube, Twitter, Image } from "lucide-react";
-import { contentAPI } from "../../services/api.service.js";
+import { X, Link, FileText, Youtube, Twitter, Image, FolderClosed, ChevronDown } from "lucide-react";
+import { contentAPI, collectionsAPI } from "../../services/api.service.js";
 import toast from "react-hot-toast";
 
 const types = [
@@ -13,12 +13,20 @@ const types = [
 ];
 
 export default function SaveModal({ onClose }) {
-  const [form, setForm] = useState({ type: "", url: "", title: "", description: "" });
+  const [form, setForm] = useState({ type: "", url: "", title: "", description: "", collections: [] });
   const [loading, setLoading] = useState(false);
+  const [collections, setCollections] = useState([]);
+  const [fetchingCols, setFetchingCols] = useState(true);
+
+  useEffect(() => {
+    collectionsAPI.getAll()
+      .then(res => setCollections(res.data || []))
+      .catch(() => {})
+      .finally(() => setFetchingCols(false));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Only require a title if no URL is provided (manual note)
     if (!form.url && !form.title) return toast.error("Please provide a Title or URL");
     
     setLoading(true);
@@ -97,6 +105,29 @@ export default function SaveModal({ onClose }) {
               <label className="text-xs text-[var(--text-3)] mb-1.5 block font-medium">Title (optional if URL provided)</label>
               <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                 placeholder="Give it a title..." className={inputCls} />
+            </div>
+
+            <div>
+              <label className="text-xs text-[var(--text-3)] mb-1.5 block font-medium">Save to Collection (optional)</label>
+              <div className="relative">
+                <select 
+                  onChange={e => setForm(f => ({ ...f, collections: e.target.value ? [e.target.value] : [] }))}
+                  className={`${inputCls} appearance-none cursor-pointer pr-10`}
+                  disabled={collections.length === 0}
+                >
+                  <option value="" className="bg-[#0b0b0f]">
+                    {collections.length === 0 ? "No collections created yet" : "Choose a collection..."}
+                  </option>
+                  {collections.map(col => (
+                    <option key={col._id} value={col._id} className="bg-[#0b0b0f]">
+                      {col.emoji} {col.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-3)]">
+                  <ChevronDown size={14} />
+                </div>
+              </div>
             </div>
 
             <div>

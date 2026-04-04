@@ -1,7 +1,29 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
+const detectContentType = (url) => {
+  if (!url) return "note";
+  const normalized = url.toLowerCase();
+  if (normalized.includes("youtube.com") || normalized.includes("youtu.be")) return "youtube";
+  if (normalized.includes("twitter.com") || normalized.includes("x.com")) return "tweet";
+  if (normalized.split('?')[0].endsWith(".pdf")) return "pdf";
+  if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(normalized)) return "image";
+  return "article";
+};
+
 const extractFromUrl = async (url) => {
+  const type = detectContentType(url);
+  if (type === 'pdf') {
+    try {
+      const filename = url.split('/').pop().split('?')[0].replace(/%20/g, ' ').replace(/-/g, ' ').replace(/_/g, ' ').replace('.pdf', '');
+      return { 
+        title: filename.charAt(0).toUpperCase() + filename.slice(1), 
+        siteName: "PDF Document",
+        rawText: `This is a PDF document located at ${url}.` 
+      };
+    } catch { return { title: "PDF Document", siteName: "PDF" }; }
+  }
+
   try {
     const { data } = await axios.get(url, {
       timeout: 10000,
@@ -24,7 +46,8 @@ const extractFromUrl = async (url) => {
     return { title: title.trim(), description: description.trim(), thumbnail, siteName, author, favicon, rawText };
   } catch (err) {
     console.error("Extraction error:", err.message);
-    return {};
+    const fallbackTitle = url.split('/').pop().split('?')[0] || "Web Article";
+    return { title: fallbackTitle };
   }
 };
 
@@ -36,15 +59,6 @@ const extractYoutube = (url) => {
     thumbnail: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null,
     embedUrl: videoId ? `https://www.youtube.com/embed/${videoId}` : null,
   };
-};
-
-const detectContentType = (url) => {
-  if (!url) return "note";
-  if (url.includes("youtube.com") || url.includes("youtu.be")) return "youtube";
-  if (url.includes("twitter.com") || url.includes("x.com")) return "tweet";
-  if (url.endsWith(".pdf")) return "pdf";
-  if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url)) return "image";
-  return "article";
 };
 
 export { extractFromUrl, extractYoutube, detectContentType };

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, ExternalLink, Youtube, Twitter, FileText, Globe, Image, File, Zap, Trash2 } from "lucide-react";
 import { contentAPI } from "../../services/api.service.js";
@@ -16,7 +16,7 @@ const typeBg     = { youtube: "#ef444415", tweet: "#38bdf815", note: "#facc1515"
 export default function ContentCard({ item, onUpdate, onDelete }) {
   const cardRef    = useRef(null);
   const rafRef     = useRef(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const navigate   = useNavigate();
   const removeContent = useStore(s => s.removeContent);
 
   const Icon  = typeIcons[item.type]  || Globe;
@@ -24,9 +24,8 @@ export default function ContentCard({ item, onUpdate, onDelete }) {
   const bg    = typeBg[item.type]     || "#f59e0b15";
   const imageSource = item.thumbnail || (item.type === 'image' ? item.url : null);
 
-  /* ── Lightweight CSS-based tilt via inline style ── */
   const onMouseMove = (e) => {
-    if (rafRef.current) return;          // throttle to 1 per RAF
+    if (rafRef.current) return;
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
       const card = cardRef.current;
@@ -37,7 +36,6 @@ export default function ContentCard({ item, onUpdate, onDelete }) {
       const rx = ((y - rect.height / 2) / rect.height) * -7;
       const ry = ((x - rect.width  / 2) / rect.width)  *  7;
       card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.02)`;
-      // Spotlight
       card.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
       card.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
     });
@@ -55,7 +53,11 @@ export default function ContentCard({ item, onUpdate, onDelete }) {
     }
   };
 
-  /* ── Favorite ── */
+  const handleCardClick = (e) => {
+    if (e.target.closest('button') || e.target.closest('a')) return;
+    navigate(`/content/${item._id}`);
+  };
+
   const handleFavorite = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -89,16 +91,16 @@ export default function ContentCard({ item, onUpdate, onDelete }) {
       ref={cardRef}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
+      onClick={handleCardClick}
       layout
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="h-full"
+      className="h-full cursor-pointer"
       style={{ willChange: 'transform' }}>
 
-      <Link to={`/content/${item._id}`}
-        className="card card-spotlight flex flex-col overflow-hidden h-full group block"
+      <div className="card card-spotlight flex flex-col overflow-hidden h-full group"
         style={{ background: 'rgba(255,255,255,0.025)' }}>
 
         {/* Thumbnail */}
@@ -133,8 +135,8 @@ export default function ContentCard({ item, onUpdate, onDelete }) {
           </div>
 
           {/* Title */}
-          <h3 className="font-bold text-sm text-white mb-1.5 line-clamp-2 leading-snug transition-colors duration-150"
-            style={{ fontFamily: 'Syne, sans-serif' }}
+          <h3 className="font-bold text-sm text-white mb-1.5 line-clamp-2 leading-snug transition-colors duration-150 break-all overflow-hidden"
+            style={{ fontFamily: 'Syne, sans-serif', overflowWrap: 'anywhere' }}
             onMouseEnter={e => e.currentTarget.style.color = color}
             onMouseLeave={e => e.currentTarget.style.color = ''}>
             {item.title}
@@ -142,7 +144,8 @@ export default function ContentCard({ item, onUpdate, onDelete }) {
 
           {/* Summary */}
           {item.summary && (
-            <p className="text-xs text-[var(--text-3)] line-clamp-2 mb-3 leading-relaxed flex-1">
+            <p className="text-xs text-[var(--text-3)] line-clamp-2 mb-3 leading-relaxed flex-1 break-words"
+               style={{ overflowWrap: 'anywhere' }}>
               {item.summary}
             </p>
           )}
@@ -191,7 +194,7 @@ export default function ContentCard({ item, onUpdate, onDelete }) {
             </div>
           </div>
         </div>
-      </Link>
+      </div>
     </motion.div>
   );
 }
