@@ -38,11 +38,11 @@ export const getRelated = async (req, res, next) => {
       if (vector) {
         const similar = await searchSimilar(vector, 6);
         const mongoIds = similar.map(s => s.mongoId).filter(id => id && id !== content._id.toString());
-        related = await Content.find({ _id: { $in: mongoIds } }).select("title type thumbnail url summary tags");
+        related = await Content.find({ _id: { $in: mongoIds }, user: req.user._id }).select("title type thumbnail url summary tags");
       }
     }
     if (related.length === 0 && content.tags?.length) {
-      related = await Content.find({ _id: { $ne: content._id }, tags: { $in: content.tags }, isArchived: { $ne: true } }).select("title type thumbnail url summary tags").limit(5);
+      related = await Content.find({ _id: { $ne: content._id }, user: req.user._id, tags: { $in: content.tags }, isArchived: { $ne: true } }).select("title type thumbnail url summary tags").limit(5);
     }
     res.json({ success: true, data: related });
   } catch (err) { next(err); }
@@ -51,7 +51,7 @@ export const getRelated = async (req, res, next) => {
 export const getAllTags = async (req, res, next) => {
   try {
     const tags = await Content.aggregate([
-      { $match: { isArchived: { $ne: true } } },
+      { $match: { user: req.user._id, isArchived: { $ne: true } } },
       { $unwind: "$tags" },
       { $group: { _id: "$tags", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
@@ -63,7 +63,7 @@ export const getAllTags = async (req, res, next) => {
 
 export const getGraphData = async (req, res, next) => {
   try {
-    const items = await Content.find({ isArchived: { $ne: true }, aiProcessed: true })
+    const items = await Content.find({ user: req.user._id, isArchived: { $ne: true }, aiProcessed: true })
       .select("title type tags category relatedItems thumbnail").populate("relatedItems", "title type");
     const nodes = items.map(item => ({ id: item._id.toString(), title: item.title, type: item.type, category: item.category, tags: item.tags, thumbnail: item.thumbnail }));
     const links = [];
