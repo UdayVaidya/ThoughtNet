@@ -6,25 +6,54 @@ export const search = async (req, res, next) => {
   try {
     const { q, type = "semantic", limit = 10 } = req.query;
     if (!q) return res.status(400).json({ success: false, message: "Query required" });
-    let results = [];
+    
+    let textResults = [];
+    let semanticResults = [];
+
+    // 1. Priority 1: Keyword/Regex match (Title and Tags)
+    // This handles short queries like "upsc" much better than semantic broadness
+    textResults = await Content.find({
+      user: req.user._id,
+      $or: [
+        { title: { $regex: q, $options: "i" } },
+        { tags: { $regex: q, $options: "i" } }
+      ]
+    }).populate("collections", "name emoji color").limit(Number(limit));
+
+    // 2. Priority 2: Semantic Search (Deep context)
     if (type === "semantic") {
       const vector = await generateEmbedding({ title: q, description: q });
       if (vector) {
-        // Fetch a bit extra since we might filter out items from other users
         const similar = await searchSimilar(vector, Number(limit) * 2);
-        // Only keep highly relevant results (Gemini embeddings typically score > 0.65 for semantic similarity)
-        const relevant = similar.filter(s => s.score > 0.65);
+        // Stricter threshold (0.72) for high relevance
+        const relevant = similar.filter(s => s.score > 0.72);
         const mongoIds = relevant.map(s => s.mongoId).filter(Boolean);
         
         const items = await Content.find({ _id: { $in: mongoIds }, user: req.user._id }).populate("collections", "name emoji color");
-        results = mongoIds.map(id => items.find(i => i._id.toString() === id)).filter(Boolean).slice(0, Number(limit));
+        semanticResults = mongoIds.map(id => items.find(i => i._id.toString() === id)).filter(Boolean);
       }
     }
-    if (results.length === 0) {
-      results = await Content.find({ $text: { $search: q }, isArchived: { $ne: true }, user: req.user._id })
+
+    // Merge and Deduplicate (Keep text matches at the top)
+    const combined = [...textResults];
+    const seenIds = new Set(textResults.map(r => r._id.toString()));
+
+    semanticResults.forEach(r => {
+      if (!seenIds.has(r._id.toString())) {
+        combined.push(r);
+        seenIds.add(r._id.toString());
+      }
+    });
+
+    // Final fallback: $text search if still no results
+    if (combined.length === 0) {
+      const atlasResults = await Content.find({ $text: { $search: q }, isArchived: { $ne: true }, user: req.user._id })
         .sort({ score: { $meta: "textScore" } }).limit(Number(limit)).populate("collections", "name emoji color");
+      combined.push(...atlasResults);
     }
-    res.json({ success: true, query: q, count: results.length, data: results });
+
+    const finalResults = combined.slice(0, Number(limit));
+    res.json({ success: true, query: q, count: finalResults.length, data: finalResults });
   } catch (err) { next(err); }
 };
 
