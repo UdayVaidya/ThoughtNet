@@ -18,8 +18,17 @@ app.use('/api/docs', (req, res, next) => {
   res.setHeader('Content-Security-Policy', '');
   next();
 });
-const frontendBaseUrl = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
-app.use(cors({ origin: frontendBaseUrl, credentials: true }));
+const allowedOrigins = [(process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "")];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('chrome-extension://')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(morgan("dev"));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
