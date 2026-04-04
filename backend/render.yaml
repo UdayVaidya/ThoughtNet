@@ -1,0 +1,65 @@
+services:
+  # 1. Backend Web Service
+  - type: web
+    name: toughtnet-backend
+    env: node
+    region: ohio # Change to your preferred region (e.g., frankfurt, oregon)
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    
+    # Environment Variables - You will fill the sync: false values in the Render Dashboard
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: FRONTEND_URL
+        sync: false # Set this to your deployed frontend URL later
+      - key: JWT_SECRET
+        sync: false 
+      - key: MONGODB_URI
+        sync: false
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_COLLECTION
+        value: toughtnet_gemini_vectors
+
+  # 2. BullMQ Background Worker
+  - type: worker
+    name: toughtnet-worker
+    env: node
+    region: ohio # Make sure this matches your backend region
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm run worker
+    
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_COLLECTION
+        value: toughtnet_gemini_vectors

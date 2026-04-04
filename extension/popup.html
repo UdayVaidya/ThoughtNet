@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "DM Sans", system-ui, sans-serif; }
+    body { width: 340px; background: #0d0d16; color: #e2e8f0; padding: 20px; }
+    .header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .logo { width: 32px; height: 32px; background: #4c6ef5; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    h1 { font-size: 16px; font-weight: 700; color: white; }
+    .field { margin-bottom: 12px; }
+    label { font-size: 11px; color: #64748b; display: block; margin-bottom: 4px; }
+    input, textarea, select { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; font-size: 13px; color: white; outline: none; }
+    input:focus, textarea:focus, select:focus { border-color: #4c6ef5; }
+    textarea { resize: none; height: 60px; }
+    button { width: 100%; padding: 10px; background: #4c6ef5; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    button:hover { background: #5c7cfa; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { font-size: 12px; text-align: center; margin-top: 10px; color: #22c55e; }
+    .error { color: #ef4444; }
+    select option { background: #1e1e2e; }
+    .api-field { margin-bottom: 16px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">T</div>
+    <h1>ToughtNet</h1>
+  </div>
+  <div class="api-field">
+    <label>API URL</label>
+    <input id="apiUrl" placeholder="http://localhost:5000" />
+  </div>
+  <div class="field">
+    <label>Type</label>
+    <select id="type">
+      <option value="article">Article</option>
+      <option value="youtube">YouTube</option>
+      <option value="tweet">Tweet</option>
+      <option value="webpage">Webpage</option>
+      <option value="image">Image</option>
+      <option value="note">Note</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Title</label>
+    <input id="title" placeholder="Page title..." />
+  </div>
+  <div class="field">
+    <label>Notes</label>
+    <textarea id="description" placeholder="Your thoughts..."></textarea>
+  </div>
+  <button id="saveBtn">Save to ToughtNet</button>
+  <div id="status" class="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
