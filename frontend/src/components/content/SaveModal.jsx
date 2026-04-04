@@ -24,6 +24,7 @@ export default function SaveModal({ onClose }) {
       await contentAPI.save(form);
       toast.success("Saved! AI processing started...");
       onClose();
+      window.dispatchEvent(new CustomEvent('refresh-content'));
     } catch (err) {
       toast.error(err.message || "Failed to save");
     } finally { setLoading(false); }

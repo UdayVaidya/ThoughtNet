@@ -119,8 +119,13 @@ export default function Dashboard() {
   }, [stats]);
 
   useEffect(() => {
-    contentAPI.getAll({ limit: 6 }).then(r => setRecent(r.data || [])).catch(() => {});
-    contentAPI.resurface().then(r => setResurfaced(r.data || [])).catch(() => {});
+    const fetchAll = () => {
+      contentAPI.getAll({ limit: 6 }).then(r => setRecent(r.data || [])).catch(() => {});
+      contentAPI.resurface().then(r => setResurfaced(r.data || [])).catch(() => {});
+    };
+    fetchAll();
+    window.addEventListener('refresh-content', fetchAll);
+    return () => window.removeEventListener('refresh-content', fetchAll);
   }, []);
 
   return (

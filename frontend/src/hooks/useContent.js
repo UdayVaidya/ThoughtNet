@@ -20,14 +20,21 @@ export function useContent(params = {}) {
     }
   }, [JSON.stringify(params)]);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  useEffect(() => { 
+    fetch(); 
+    window.addEventListener('refresh-content', fetch);
+    return () => window.removeEventListener('refresh-content', fetch);
+  }, [fetch]);
   return { data, setData, loading, total, refetch: fetch };
 }
 
 export function useStats() {
   const [stats, setStats] = useState(null);
   useEffect(() => {
-    contentAPI.getStats().then(res => setStats(res.data)).catch(() => {});
+    const fetch = () => contentAPI.getStats().then(res => setStats(res.data)).catch(() => {});
+    fetch();
+    window.addEventListener('refresh-content', fetch);
+    return () => window.removeEventListener('refresh-content', fetch);
   }, []);
   return stats;
 }

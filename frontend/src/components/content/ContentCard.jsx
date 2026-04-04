@@ -65,6 +65,7 @@ export default function ContentCard({ item, onUpdate, onDelete }) {
       setTimeout(() => { el.style.transform = ''; }, 300);
       const res = await contentAPI.toggleFavorite(item._id);
       onUpdate?.(item._id, { isFavorite: res.isFavorite });
+      window.dispatchEvent(new CustomEvent('refresh-content'));
       toast.success(res.isFavorite ? "❤️ Added to favorites" : "Removed from favorites");
     } catch { toast.error("Failed"); }
   };
@@ -76,6 +77,7 @@ export default function ContentCard({ item, onUpdate, onDelete }) {
       await contentAPI.delete(item._id);
       removeContent(item._id);
       onDelete?.(item._id);
+      window.dispatchEvent(new CustomEvent('refresh-content'));
       toast.success("Deleted");
     } catch {
       toast.error("Delete failed");
