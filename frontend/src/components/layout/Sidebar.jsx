@@ -19,7 +19,7 @@ const navItems = [
   { to: "/insights",    icon: BarChart2,       label: "Insights",        color: "#f43f5e" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const [showSave, setShowSave] = useState(false);
   const { user, setUser } = useStore();
   const location = useLocation();
@@ -27,12 +27,13 @@ export default function Sidebar() {
   const sidebarRef = useRef(null);
   const logoRef = useRef(null);
 
+  // Close mobile sidebar on link click
   useEffect(() => {
-    if (!sidebarRef.current) return;
-    gsap.fromTo(sidebarRef.current,
-      { x: -80, opacity: 0 },
-      { x: 0, opacity: 1, duration: 0.7, ease: "power3.out", delay: 0.1 }
-    );
+    if (window.innerWidth < 1024) onClose();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!logoRef.current) return;
     gsap.fromTo(logoRef.current,
       { scale: 0.5, opacity: 0 },
       { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2)", delay: 0.4 }
@@ -52,11 +53,26 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside ref={sidebarRef} className="w-64 h-full flex flex-col shrink-0 relative z-10"
+      {/* Mobile Backdrop */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      <aside 
+        ref={sidebarRef} 
+        className={`fixed inset-y-0 left-0 lg:static w-72 h-full flex flex-col shrink-0 z-[101] transition-transform duration-300 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{
-          background: 'rgba(6,6,8,0.85)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          background: 'rgba(6,6,8,0.95)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
           borderRight: '1px solid rgba(255,255,255,0.06)',
         }}>
 

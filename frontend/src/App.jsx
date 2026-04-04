@@ -12,11 +12,13 @@ import ContentDetailPage from "./pages/ContentDetailPage.jsx";
 import AuthPage from "./pages/AuthPage.jsx";
 import useStore from "./store/useStore.js";
 import { authAPI } from "./services/api.service.js";
+import { Brain } from "lucide-react";
 
 import MeshBackground from "./components/ui/MeshBackground.jsx";
 
 export default function App() {
   const { user, setUser, isAuthChecking, setIsAuthChecking } = useStore();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   useEffect(() => {
     authAPI.getProfile()
@@ -70,12 +72,37 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      
       <MeshBackground />
       <Toaster position="top-right" toastOptions={toastStyle} />
+      
+      {/* Mobile Top Header (Visible only on mobile) */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 glass z-40 px-4 flex items-center justify-between border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center relative"
+            style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.05))', border: '1px solid rgba(245,158,11,0.2)' }}>
+            <Brain size={14} style={{ color: '#f59e0b' }} />
+          </div>
+          <div>
+            <span className="font-black text-sm text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
+              Thought<span className="gradient-text">Net</span>
+            </span>
+          </div>
+        </div>
+        <button 
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="p-2 rounded-lg bg-white/5 text-white active:scale-95 transition-all"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
       <div className="flex h-screen overflow-hidden" style={{ position: 'relative', zIndex: 1 }}>
-        <Sidebar />
-        <main className="flex-1 overflow-y-auto" style={{ background: 'transparent' }}>
+        <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+        <main className="flex-1 overflow-y-auto pt-16 lg:pt-0" style={{ background: 'transparent' }}>
           <Routes>
             <Route path="/"           element={<Dashboard />} />
             <Route path="/library"    element={<LibraryPage />} />

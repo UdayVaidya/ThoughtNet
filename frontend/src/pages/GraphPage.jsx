@@ -180,10 +180,10 @@ export default function GraphPage() {
   }, [filteredData, loading, hoveredNode]);
 
   return (
-    <div className="relative h-screen flex overflow-hidden bg-[#060608]">
+    <div className="relative h-screen flex flex-col lg:flex-row overflow-hidden bg-[#060608]">
       
-      {/* ── Sidebar Controls ── */}
-      <div className="w-80 flex flex-col glass-dark border-r border-white/5 p-6 z-20">
+      {/* ── Sidebar Controls (Hidden on mobile by default) ── */}
+      <div className="hidden lg:flex w-80 flex-col glass-dark border-r border-white/5 p-6 z-20">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center">
             <Network className="text-brand" size={20} />
@@ -277,7 +277,7 @@ export default function GraphPage() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="absolute top-0 right-0 h-screen w-96 glass-mid border-l border-white/10 z-50 p-8 shadow-2xl"
+            className="absolute top-0 right-0 h-screen w-full lg:w-96 glass-mid border-l border-white/10 z-50 p-8 shadow-2xl"
           >
             <button 
               onClick={() => setSelectedNode(null)}
