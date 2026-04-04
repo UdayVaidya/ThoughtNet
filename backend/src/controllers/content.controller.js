@@ -1,11 +1,27 @@
 import Content from '../models/content.model.js';
 import { addToProcessingQueue } from '../queue/content.queue.js';
-import { detectContentType } from '../utils/extractor.util.js';
+import { detectContentType, extractFromUrl } from '../utils/extractor.util.js';
 
 export const saveContent = async (req, res, next) => {
   try {
     let body = { ...req.body, user: req.user._id };
-    if (body.url && !body.type) body.type = detectContentType(body.url);
+    
+    // Auto-detect type if missing
+    if (body.url && !body.type) {
+      body.type = detectContentType(body.url);
+    }
+    
+    // Auto-fetch title if missing
+    if (body.url && !body.title) {
+      const extracted = await extractFromUrl(body.url);
+      if (extracted.title) body.title = extracted.title;
+      else body.title = body.url; // Fallback to URL
+    }
+
+    // Default for manual notes or fallbacks
+    if (!body.type) body.type = "note";
+    if (!body.title) body.title = "New Thought " + new Date().toLocaleDateString();
+
     const content = await Content.create(body);
     await addToProcessingQueue(content._id);
     res.status(201).json({ success: true, data: content });

@@ -4,22 +4,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   const stored = await chrome.storage.local.get([API_KEY]);
   document.getElementById("apiUrl").value = stored[API_KEY] || "http://localhost:5000";
 
+  let currentTabTitle = "";
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
     const url = tab.url || "";
-    document.getElementById("title").value = tab.title || "";
+    currentTabTitle = tab.title || "Untitled Knowledge";
+    document.getElementById("pageTitle").textContent = currentTabTitle;
     if (url.includes("youtube.com") || url.includes("youtu.be")) document.getElementById("type").value = "youtube";
     else if (url.includes("twitter.com") || url.includes("x.com")) document.getElementById("type").value = "tweet";
   });
 
   document.getElementById("saveBtn").addEventListener("click", async () => {
     const apiUrl = document.getElementById("apiUrl").value.trim();
-    const title = document.getElementById("title").value.trim();
+    const title = currentTabTitle;
     const type = document.getElementById("type").value;
     const description = document.getElementById("description").value.trim();
     const status = document.getElementById("status");
 
-    if (!title) { status.className = "status error"; status.textContent = "Title is required"; return; }
+    if (!title) { status.className = "status error"; status.textContent = "Could not fetch page title"; return; }
 
     await chrome.storage.local.set({ [API_KEY]: apiUrl });
     document.getElementById("saveBtn").disabled = true;

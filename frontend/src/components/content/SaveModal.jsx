@@ -13,12 +13,14 @@ const types = [
 ];
 
 export default function SaveModal({ onClose }) {
-  const [form, setForm] = useState({ type: "article", url: "", title: "", description: "" });
+  const [form, setForm] = useState({ type: "", url: "", title: "", description: "" });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title) return toast.error("Title is required");
+    // Only require a title if no URL is provided (manual note)
+    if (!form.url && !form.title) return toast.error("Please provide a Title or URL");
+    
     setLoading(true);
     try {
       await contentAPI.save(form);
@@ -62,7 +64,7 @@ export default function SaveModal({ onClose }) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-xs text-[var(--text-3)] mb-2 block font-medium">Content Type</label>
+              <label className="text-xs text-[var(--text-3)] mb-2 block font-medium">Content Type (optional - auto-detected)</label>
               <div className="flex gap-2 flex-wrap">
                 {types.map(({ value, label, icon: Icon }) => (
                   <button key={value} type="button"
@@ -92,7 +94,7 @@ export default function SaveModal({ onClose }) {
             )}
 
             <div>
-              <label className="text-xs text-[var(--text-3)] mb-1.5 block font-medium">Title *</label>
+              <label className="text-xs text-[var(--text-3)] mb-1.5 block font-medium">Title (optional if URL provided)</label>
               <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                 placeholder="Give it a title..." className={inputCls} />
             </div>
