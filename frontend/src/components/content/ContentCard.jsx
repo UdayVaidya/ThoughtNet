@@ -105,10 +105,14 @@ export default function ContentCard({ item, onUpdate, onDelete }) {
 
         {/* Thumbnail */}
         {imageSource ? (
-          <div className="h-36 overflow-hidden relative">
+          <div className="h-36 overflow-hidden relative bg-[rgba(255,255,255,0.03)] flex items-center justify-center">
             <img src={imageSource} alt={item.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              loading="lazy" />
+              loading="lazy"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.parentElement.classList.add('bg-gradient-to-br', 'from-[rgba(245,158,11,0.05)]', 'to-transparent');
+              }} />
             <div className="absolute top-0 left-0 right-0 h-0.5"
               style={{ background: `linear-gradient(90deg, ${color}, transparent)` }} />
           </div>

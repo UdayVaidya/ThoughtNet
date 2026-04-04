@@ -62,7 +62,7 @@ const extractYoutube = async (url) => {
   
   const result = {
     videoId,
-    thumbnail: videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null,
+    thumbnail: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null,
     embedUrl: videoId ? `https://www.youtube.com/embed/${videoId}` : null,
     title: "YouTube Video",
     siteName: "YouTube"

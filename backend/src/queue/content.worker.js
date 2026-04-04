@@ -23,8 +23,9 @@ const worker = new Worker("content-processing", async (job) => {
 
   if (content.url && !content.rawText) {
     if (content.type === "youtube") {
-      const yt = extractYoutube(content.url);
+      const yt = await extractYoutube(content.url);
       if (!content.thumbnail && yt.thumbnail) content.thumbnail = yt.thumbnail;
+      if (!content.title || content.title.includes("YouTube")) content.title = yt.title;
     } else {
       const extracted = await extractFromUrl(content.url);
       if (extracted.rawText) content.rawText = extracted.rawText;
