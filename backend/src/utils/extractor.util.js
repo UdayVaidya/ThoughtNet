@@ -13,6 +13,11 @@ const detectContentType = (url) => {
 
 const extractFromUrl = async (url) => {
   const type = detectContentType(url);
+
+  if (type === 'youtube') {
+    return await extractYoutube(url);
+  }
+
   if (type === 'pdf') {
     try {
       const filename = url.split('/').pop().split('?')[0].replace(/%20/g, ' ').replace(/-/g, ' ').replace(/_/g, ' ').replace('.pdf', '');
@@ -51,14 +56,31 @@ const extractFromUrl = async (url) => {
   }
 };
 
-const extractYoutube = (url) => {
+const extractYoutube = async (url) => {
   const match = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   const videoId = match ? match[1] : null;
-  return {
+  
+  const result = {
     videoId,
-    thumbnail: videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null,
+    thumbnail: videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null,
     embedUrl: videoId ? `https://www.youtube.com/embed/${videoId}` : null,
+    title: "YouTube Video",
+    siteName: "YouTube"
   };
+
+  if (videoId) {
+    try {
+      const { data } = await axios.get(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+      if (data) {
+        result.title = data.title;
+        result.author = data.author_name;
+        result.thumbnail = data.thumbnail_url || result.thumbnail;
+      }
+    } catch (err) {
+      console.error("YouTube oembed error:", err.message);
+    }
+  }
+  return result;
 };
 
 export { extractFromUrl, extractYoutube, detectContentType };
