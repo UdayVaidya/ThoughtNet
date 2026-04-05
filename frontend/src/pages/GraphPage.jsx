@@ -21,6 +21,7 @@ const TYPE_COLORS = {
 export default function GraphPage() {
   const containerRef = useRef(null);
   const svgRef = useRef(null);
+  const simulationRef = useRef(null);
   const navigate = useNavigate();
   
   const [data, setData] = useState({ nodes: [], links: [] });
@@ -30,7 +31,7 @@ export default function GraphPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
 
-  const simulationRef = useRef(null);
+  const zoomRef = useRef(null);
 
   // Fetch initial data
   useEffect(() => {
@@ -73,7 +74,8 @@ export default function GraphPage() {
     const zoom = d3.zoom()
       .scaleExtent([0.1, 8])
       .on("zoom", (event) => g.attr("transform", event.transform));
-
+    
+    zoomRef.current = zoom;
     svg.call(zoom);
 
     // Forces
@@ -87,12 +89,12 @@ export default function GraphPage() {
 
     // Links
     const link = g.append("g")
-      .attr("stroke", "rgba(255,255,255,0.06)")
-      .attr("stroke-opacity", 0.6)
       .selectAll("line")
       .data(filteredData.links)
       .join("line")
-      .attr("stroke-width", d => Math.sqrt(d.strength || 1) * 1.5);
+      .attr("stroke", "url(#linkGradient)")
+      .attr("stroke-opacity", 0.4)
+      .attr("stroke-width", d => Math.sqrt(d.strength || 1) * 2);
 
     // Nodes
     const node = g.append("g")
@@ -104,20 +106,57 @@ export default function GraphPage() {
         e.stopPropagation();
         setSelectedNode(d);
       })
-      .on("mouseenter", (e, d) => setHoveredNode(d))
-      .on("mouseleave", () => setHoveredNode(null))
+      .on("mouseenter", (e, d) => {
+        setHoveredNode(d);
+        // Animate node size up on hover
+        d3.select(e.currentTarget).select("circle")
+          .transition()
+          .duration(300)
+          .attr("r", 20)
+          .style("filter", `drop-shadow(0 0 12px ${TYPE_COLORS[d.type]}aa)`);
+        
+        d3.select(e.currentTarget).select("text")
+          .transition()
+          .duration(300)
+          .attr("opacity", 1)
+          .attr("dy", 32);
+      })
+      .on("mouseleave", (e, d) => {
+        setHoveredNode(null);
+        // Reset node size
+        d3.select(e.currentTarget).select("circle")
+          .transition()
+          .duration(300)
+          .attr("r", 14)
+          .style("filter", `drop-shadow(0 0 6px ${TYPE_COLORS[d.type]}80)`);
+        
+        d3.select(e.currentTarget).select("text")
+          .transition()
+          .duration(300)
+          .attr("opacity", 0)
+          .attr("dy", 24);
+      })
       .style("cursor", "pointer");
 
     // Node Circle
     node.append("circle")
       .attr("r", 14)
       .attr("fill", d => TYPE_COLORS[d.type] || "#f59e0b")
-      .attr("stroke", "#0b0b0f")
+      .attr("stroke", "rgba(255,255,255,0.1)")
       .attr("stroke-width", 2)
       .style("filter", d => `drop-shadow(0 0 6px ${TYPE_COLORS[d.type]}80)`);
 
     // Image pattern if available
     const defs = svg.append("defs");
+    
+    // Add glowing line effect (Neural fiber)
+    const lineGradient = defs.append("linearGradient")
+      .attr("id", "linkGradient")
+      .attr("gradientUnits", "userSpaceOnUse");
+    lineGradient.append("stop").attr("offset", "0%").attr("stop-color", "rgba(245,158,11,0.2)");
+    lineGradient.append("stop").attr("offset", "50%").attr("stop-color", "rgba(56,189,248,0.4)");
+    lineGradient.append("stop").attr("offset", "100%").attr("stop-color", "rgba(245,158,11,0.2)");
+
     filteredData.nodes.forEach(n => {
       if (n.thumbnail) {
         defs.append("pattern")
@@ -134,18 +173,19 @@ export default function GraphPage() {
 
     node.select("circle")
       .attr("fill", d => d.thumbnail ? `url(#pattern-${d.id})` : (TYPE_COLORS[d.type] || "#f59e0b"))
-      .attr("opacity", d => (hoveredNode && hoveredNode.id !== d.id ? 0.4 : 1))
+      .attr("opacity", d => (hoveredNode && hoveredNode.id !== d.id ? 0.3 : 1))
       .transition().duration(200);
 
-    // Labels (only visible on zoom or for highlights)
+    // Labels
     node.append("text")
       .attr("dy", 24)
       .attr("text-anchor", "middle")
       .attr("fill", "#fff")
-      .attr("font-size", "10px")
-      .attr("font-weight", "500")
-      .attr("opacity", d => (hoveredNode?.id === d.id ? 1 : 0))
+      .attr("font-size", "11px")
+      .attr("font-weight", "600")
+      .attr("opacity", 0) // Start hidden
       .style("pointer-events", "none")
+      .style("text-shadow", "0 2px 4px rgba(0,0,0,0.8)")
       .text(d => d.title.length > 25 ? d.title.slice(0, 22) + "..." : d.title);
 
     simulation.on("tick", () => {
@@ -177,7 +217,7 @@ export default function GraphPage() {
     }
 
     return () => simulation.stop();
-  }, [filteredData, loading, hoveredNode]);
+  }, [filteredData, loading]);
 
   return (
     <div className="relative h-screen flex flex-col lg:flex-row overflow-hidden bg-[#060608]">
@@ -212,7 +252,7 @@ export default function GraphPage() {
           <div className="flex flex-wrap gap-2">
             <button 
               onClick={() => setFilterType("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs transition-all ${filterType === 'all' ? 'bg-brand text-black font-bold' : 'bg-white/5 text-text-3 hover:bg-white/10'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs transition-all ${filterType === 'all' ? 'bg-brand text-black bg-white font-bold' : 'bg-white/5 text-text-3 hover:bg-white/10'}`}
             >
               All
             </button>
@@ -257,15 +297,24 @@ export default function GraphPage() {
 
         {/* Floating Zoom Controls */}
         <div className="absolute bottom-8 right-8 flex flex-col gap-2 z-20">
-          {[
-            { icon: ZoomIn, action: () => {} },
-            { icon: ZoomOut, action: () => {} },
-            { icon: Maximize2, action: () => {} }
-          ].map((btn, i) => (
-            <button key={i} className="p-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl text-white hover:bg-brand hover:text-black transition-all group">
-              <btn.icon size={18} />
-            </button>
-          ))}
+          <button 
+            onClick={() => d3.select(svgRef.current).transition().duration(400).call(zoomRef.current.scaleBy, 1.5)}
+            className="p-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl text-white hover:bg-brand hover:text-black transition-all group shadow-lg"
+          >
+            <ZoomIn size={18} />
+          </button>
+          <button 
+            onClick={() => d3.select(svgRef.current).transition().duration(400).call(zoomRef.current.scaleBy, 0.6)}
+            className="p-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl text-white hover:bg-brand hover:text-black transition-all group shadow-lg"
+          >
+            <ZoomOut size={18} />
+          </button>
+          <button 
+            onClick={() => d3.select(svgRef.current).transition().duration(600).call(zoomRef.current.transform, d3.zoomIdentity)}
+            className="p-3 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl text-white hover:bg-brand hover:text-black transition-all group shadow-lg"
+          >
+            <Maximize2 size={18} />
+          </button>
         </div>
       </div>
 

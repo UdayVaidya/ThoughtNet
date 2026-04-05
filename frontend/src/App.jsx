@@ -41,7 +41,7 @@ export default function App() {
   if (isAuthChecking) {
     return (
       <div className="h-screen flex items-center justify-center" style={{ background: '#060608' }}>
-        
+
         <div className="flex flex-col items-center gap-4">
           {/* Animated logo-ish spinner */}
           <div style={{ position: 'relative', width: 48, height: 48 }}>
@@ -63,7 +63,7 @@ export default function App() {
   if (!user) {
     return (
       <>
-        
+
         <Toaster position="top-right" toastOptions={toastStyle} />
         <AuthPage />
       </>
@@ -74,21 +74,27 @@ export default function App() {
     <BrowserRouter>
       <MeshBackground />
       <Toaster position="top-right" toastOptions={toastStyle} />
-      
+
       {/* Mobile Top Header (Visible only on mobile) */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 glass z-40 px-4 flex items-center justify-between border-b border-white/5">
+      <div className={`lg:hidden fixed top-0 left-0 right-0 h-16 glass z-40 px-4 flex items-center justify-between border-b border-white/5 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center relative"
-            style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.05))', border: '1px solid rgba(245,158,11,0.2)' }}>
-            <Brain size={14} style={{ color: '#f59e0b' }} />
-          </div>
-          <div>
-            <span className="font-black text-sm text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
-              Thought<span className="gradient-text">Net</span>
-            </span>
+          <div  className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center grad-border relative"
+              style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.25), rgba(245,158,11,0.08))' }}>
+              <Brain size={18} className="relative z-10" style={{ color: '#f59e0b' }} />
+            </div>
+            <div>
+              <span className="font-black text-[1.1rem] text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
+                Thought<span className="gradient-text">Net</span>
+              </span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="neon-dot" />
+                <span className="text-[10px] text-[var(--text-3)] font-medium tracking-wider uppercase">AI Powered</span>
+              </div>
+            </div>
           </div>
         </div>
-        <button 
+        <button
           onClick={() => setIsMobileMenuOpen(true)}
           className="p-2 rounded-lg bg-white/5 text-white active:scale-95 transition-all"
         >
@@ -104,14 +110,14 @@ export default function App() {
         <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
         <main className="flex-1 overflow-y-auto pt-16 lg:pt-0" style={{ background: 'transparent' }}>
           <Routes>
-            <Route path="/"           element={<Dashboard />} />
-            <Route path="/library"    element={<LibraryPage />} />
-            <Route path="/search"     element={<SearchPage />} />
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/library" element={<LibraryPage />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route path="/collections" element={<CollectionsPage />} />
-            <Route path="/graph"      element={<GraphPage />} />
-            <Route path="/insights"   element={<InsightsPage />} />
+            <Route path="/graph" element={<GraphPage />} />
+            <Route path="/insights" element={<InsightsPage />} />
             <Route path="/content/:id" element={<ContentDetailPage />} />
-            <Route path="*"           element={<Navigate to="/" />} />
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>
       </div>

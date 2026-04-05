@@ -4,19 +4,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { gsap } from "gsap";
 import {
   Brain, LayoutDashboard, Library, Search, FolderOpen,
-  BarChart2, Plus, LogOut, User, ChevronRight, Sparkles, Network,
+  BarChart2, Plus, LogOut, User, ChevronRight, Sparkles, Network, X
 } from "lucide-react";
 import SaveModal from "../content/SaveModal.jsx";
 import { authAPI } from "../../services/api.service.js";
 import useStore from "../../store/useStore.js";
 
 const navItems = [
-  { to: "/",            icon: LayoutDashboard, label: "Dashboard",       color: "#f59e0b" },
-  { to: "/library",     icon: Library,         label: "Library",         color: "#06d6a0" },
-  { to: "/search",      icon: Search,          label: "Semantic Search", color: "#38bdf8" },
-  { to: "/collections", icon: FolderOpen,      label: "Collections",     color: "#fb923c" },
-  { to: "/graph",       icon: Network,         label: "Knowledge Graph", color: "#a78bfa" },
-  { to: "/insights",    icon: BarChart2,       label: "Insights",        color: "#f43f5e" },
+  { to: "/", icon: LayoutDashboard, label: "Dashboard", color: "#f59e0b" },
+  { to: "/library", icon: Library, label: "Library", color: "#06d6a0" },
+  { to: "/search", icon: Search, label: "Semantic Search", color: "#38bdf8" },
+  { to: "/collections", icon: FolderOpen, label: "Collections", color: "#fb923c" },
+  { to: "/graph", icon: Network, label: "Knowledge Graph", color: "#a78bfa" },
+  { to: "/insights", icon: BarChart2, label: "Insights", color: "#f43f5e" },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -49,6 +49,7 @@ export default function Sidebar({ isOpen, onClose }) {
     const btn = btnRef.current;
     if (btn) gsap.fromTo(btn, { scale: 0.92 }, { scale: 1, duration: 0.3, ease: "back.out(3)" });
     setShowSave(true);
+    onClose();
   };
 
   return (
@@ -56,9 +57,9 @@ export default function Sidebar({ isOpen, onClose }) {
       {/* Mobile Backdrop */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] lg:hidden"
@@ -66,13 +67,13 @@ export default function Sidebar({ isOpen, onClose }) {
         )}
       </AnimatePresence>
 
-      <aside 
-        ref={sidebarRef} 
-        className={`fixed inset-y-0 left-0 lg:static w-72 h-full flex flex-col shrink-0 z-[101] transition-transform duration-300 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      <aside
+        ref={sidebarRef}
+        className={`fixed inset-y-0 left-0 lg:static w-[330px] h-full flex flex-col shrink-0 z-[101] transition-transform duration-300 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{
-          background: 'rgba(6,6,8,0.95)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
+          background: 'rgba(6,6,8,0.98)',
+          backdropFilter: 'blur(28px)',
+          WebkitBackdropFilter: 'blur(28px)',
           borderRight: '1px solid rgba(255,255,255,0.06)',
         }}>
 
@@ -80,7 +81,7 @@ export default function Sidebar({ isOpen, onClose }) {
         <div className="sidebar-glow-line" />
 
         {/* Logo */}
-        <div className="p-6 pb-4">
+        <div className="p-6 pb-4 flex items-center justify-between">
           <div ref={logoRef} className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center grad-border relative"
               style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.25), rgba(245,158,11,0.08))' }}>
@@ -96,6 +97,17 @@ export default function Sidebar({ isOpen, onClose }) {
               </div>
             </div>
           </div>
+
+          {/* Close button for mobile */}
+          <motion.button
+            onClick={onClose}
+            whileHover={{ scale: 1.05, backgroundColor: "rgba(245, 158, 11, 0.15)" }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }} // Snappy elastic feel
+            className="lg:hidden p-2 rounded-xl text-brand transition-colors"
+          >
+            <X size={20} />
+          </motion.button>
         </div>
 
         <div className="px-4 pb-4">

@@ -99,11 +99,24 @@ export const getGraphData = async (req, res, next) => {
     items.forEach(item => {
       item.relatedItems?.forEach(rel => links.push({ source: item._id.toString(), target: rel._id.toString(), strength: 1 }));
     });
+    // Tag Map connections
     const tagMap = {};
     items.forEach(item => { item.tags?.forEach(tag => { if (!tagMap[tag]) tagMap[tag] = []; tagMap[tag].push(item._id.toString()); }); });
     Object.values(tagMap).forEach(ids => {
-      if (ids.length > 1 && ids.length <= 8) {
-        for (let i = 0; i < ids.length - 1; i++) links.push({ source: ids[i], target: ids[i+1], strength: 0.5 });
+      if (ids.length > 1 && ids.length <= 12) { // Increased limit slightly
+        for (let i = 0; i < ids.length - 1; i++) links.push({ source: ids[i], target: ids[i+1], strength: 0.6, type: "tag" });
+      }
+    });
+
+    // New: Category-based links (Clusters)
+    const categoryMap = {};
+    items.forEach(item => { if (item.category) { if (!categoryMap[item.category]) categoryMap[item.category] = []; categoryMap[item.category].push(item._id.toString()); } });
+    Object.values(categoryMap).forEach(ids => {
+      if (ids.length > 1) {
+        // Only connect the first 5 in a cluster to avoid hairballs
+        for (let i = 0; i < Math.min(ids.length - 1, 5); i++) {
+          links.push({ source: ids[i], target: ids[i+1], strength: 0.3, type: "category" });
+        }
       }
     });
     res.json({ success: true, data: { nodes, links } });
