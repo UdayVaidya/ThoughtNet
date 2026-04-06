@@ -64,7 +64,12 @@ export const getUserProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
     if (user) {
-      res.json({ success: true, user: { _id: user._id, name: user.name, email: user.email }});
+      const token = req.cookies.jwt || req.headers.authorization?.split(' ')[1];
+      res.json({ 
+        success: true, 
+        token, 
+        user: { _id: user._id, name: user.name, email: user.email }
+      });
     } else {
       res.status(404);
       throw new Error('User not found');
