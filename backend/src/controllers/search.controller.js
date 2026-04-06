@@ -93,8 +93,16 @@ export const getAllTags = async (req, res, next) => {
 export const getGraphData = async (req, res, next) => {
   try {
     const items = await Content.find({ user: req.user._id, isArchived: { $ne: true }, aiProcessed: true })
-      .select("title type tags category relatedItems thumbnail").populate("relatedItems", "title type");
-    const nodes = items.map(item => ({ id: item._id.toString(), title: item.title, type: item.type, category: item.category, tags: item.tags, thumbnail: item.thumbnail }));
+      .select("title type tags category relatedItems thumbnail url").populate("relatedItems", "title type");
+    const nodes = items.map(item => ({ 
+      id: item._id.toString(), 
+      title: item.title, 
+      type: item.type, 
+      category: item.category, 
+      tags: item.tags, 
+      thumbnail: item.thumbnail,
+      url: item.url 
+    }));
     const links = [];
     items.forEach(item => {
       item.relatedItems?.forEach(rel => links.push({ source: item._id.toString(), target: rel._id.toString(), strength: 1 }));
