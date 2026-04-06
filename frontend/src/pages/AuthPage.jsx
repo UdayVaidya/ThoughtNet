@@ -121,6 +121,7 @@ export default function AuthPage() {
       const res = isLogin
         ? await authAPI.login({ email: formData.email, password: formData.password })
         : await authAPI.register(formData);
+      if (res.token) localStorage.setItem('thoughtnet_token', res.token);
       setUser(res.user);
       toast.success(`Welcome${isLogin ? ' back' : ''}, ${res.user.name}! 🧠`);
     } catch (err) {

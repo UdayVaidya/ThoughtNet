@@ -11,6 +11,7 @@ const generateToken = (res, userId) => {
     sameSite: 'none',
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
+  return token;
 };
 
 export const registerUser = async (req, res, next) => {
@@ -23,8 +24,12 @@ export const registerUser = async (req, res, next) => {
     }
     const user = await User.create({ name, email, password });
     if (user) {
-      generateToken(res, user._id);
-      res.status(201).json({ success: true, user: { _id: user._id, name: user.name, email: user.email }});
+      const token = generateToken(res, user._id);
+      res.status(201).json({ 
+        success: true, 
+        token,
+        user: { _id: user._id, name: user.name, email: user.email }
+      });
     } else {
       res.status(400);
       throw new Error('Invalid user data');
@@ -37,8 +42,12 @@ export const authUser = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (user && (await user.matchPassword(password))) {
-      generateToken(res, user._id);
-      res.json({ success: true, user: { _id: user._id, name: user.name, email: user.email }});
+      const token = generateToken(res, user._id);
+      res.json({ 
+        success: true, 
+        token,
+        user: { _id: user._id, name: user.name, email: user.email }
+      });
     } else {
       res.status(401);
       throw new Error('Invalid email or password');

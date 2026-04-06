@@ -3,7 +3,7 @@
   "name": "ToughtNet - Save to Second Brain",
   "version": "1.0.0",
   "description": "Save any page to your ToughtNet knowledge base",
-  "permissions": ["activeTab", "storage", "contextMenus", "cookies"],
+  "permissions": ["activeTab", "storage", "contextMenus", "cookies", "scripting"],
   "host_permissions": ["http://localhost:*/*", "https://*.onrender.com/*"],
   "action": {
     "default_popup": "popup.html"

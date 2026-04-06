@@ -14,8 +14,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     else if (url.includes("twitter.com") || url.includes("x.com")) document.getElementById("type").value = "tweet";
   });
 
-  document.getElementById("saveBtn").addEventListener("click", async () => {
-    const apiUrl = document.getElementById("apiUrl").value.trim();
+    document.getElementById("saveBtn").addEventListener("click", async () => {
+    let apiUrl = document.getElementById("apiUrl").value.trim();
+    if (apiUrl.endsWith("/")) apiUrl = apiUrl.slice(0, -1);
+    
     const title = currentTabTitle;
     const type = document.getElementById("type").value;
     const description = document.getElementById("description").value.trim();
@@ -29,18 +31,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     status.textContent = "";
 
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
-      const url = tabs[0].url;
+      const currentTabUrl = tabs[0].url;
       try {
-        const urlObj = new URL(apiUrl);
-        const cookie = await chrome.cookies.get({ url: urlObj.origin, name: "jwt" });
         const headers = { "Content-Type": "application/json" };
-        if (cookie) headers["Authorization"] = `Bearer ${cookie.value}`;
+        
+        // 1. Try to get token from Backend Cookie
+        try {
+          const urlObj = new URL(apiUrl);
+          const cookie = await chrome.cookies.get({ url: urlObj.origin, name: "jwt" });
+          if (cookie) headers["Authorization"] = `Bearer ${cookie.value}`;
+        } catch (e) {}
+
+        // 2. Fallback: Try to get token from open ThoughtNet tabs (localStorage)
+        if (!headers["Authorization"]) {
+          try {
+            const allTabs = await chrome.tabs.query({});
+            const feTab = allTabs.find(t => t.url.includes("thoughtnet") || t.url.includes("vercel.app"));
+            if (feTab) {
+              const res = await chrome.scripting.executeScript({
+                target: { tabId: feTab.id },
+                func: () => localStorage.getItem('thoughtnet_token'),
+              });
+              const token = res[0].result;
+              if (token) headers["Authorization"] = `Bearer ${token}`;
+            }
+          } catch (e) {}
+        }
 
         const res = await fetch(`${apiUrl}/api/content`, {
           method: "POST",
           headers,
           credentials: "include",
-          body: JSON.stringify({ title, type, url, description }),
+          body: JSON.stringify({ title, type, url: currentTabUrl, description }),
         });
         const data = await res.json();
         if (data.success) {

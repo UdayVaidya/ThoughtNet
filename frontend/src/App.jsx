@@ -22,7 +22,10 @@ export default function App() {
 
   useEffect(() => {
     authAPI.getProfile()
-      .then((res) => setUser(res.user))
+      .then((res) => {
+        setUser(res.user);
+        if (res.token) localStorage.setItem('thoughtnet_token', res.token);
+      })
       .catch(() => setUser(null))
       .finally(() => setIsAuthChecking(false));
   }, [setUser, setIsAuthChecking]);
