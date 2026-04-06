@@ -31,9 +31,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const url = tabs[0].url;
       try {
+        const urlObj = new URL(apiUrl);
+        const cookie = await chrome.cookies.get({ url: urlObj.origin, name: "jwt" });
+        const headers = { "Content-Type": "application/json" };
+        if (cookie) headers["Authorization"] = `Bearer ${cookie.value}`;
+
         const res = await fetch(`${apiUrl}/api/content`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           credentials: "include",
           body: JSON.stringify({ title, type, url, description }),
         });
